@@ -104,15 +104,18 @@ def get_uint8_range(x):
 
 
 # initially it takes some time for PyTorch to download the models into local cache
-def prepare_model(model, device):
+def prepare_model(config, device):
+    model = config['model']
     # we are not tuning model weights -> we are only tuning optimizing_img's pixels! (that's why requires_grad=False)
-    experimental = False
+    # experimental = False
     if model == 'vgg16':
-        if experimental:
-            # much more flexible for experimenting with different style representations
-            model = Vgg16Experimental(requires_grad=False, show_progress=True)
-        else:
-            model = Vgg16(requires_grad=False, show_progress=True)
+      model = Vgg16(requires_grad=False, show_progress=True)
+    elif model == 'vgg16exp':
+      content_layer = config['content_layer']
+      style_layers = config['style_layers']
+      # much more flexible for experimenting with different style representations
+      model = Vgg16Experimental(content_layer, style_layers, requires_grad=False, show_progress=True)
+
     elif model == 'vgg19':
         model = Vgg19(requires_grad=False, show_progress=True)
     else:

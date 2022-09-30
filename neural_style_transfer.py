@@ -74,7 +74,7 @@ def neural_style_transfer(config):
     # we are tuning optimizing_img's pixels! (that's why requires_grad=True)
     optimizing_img = Variable(init_img, requires_grad=True)
 
-    neural_net, content_feature_maps_index_name, style_feature_maps_indices_names = utils.prepare_model(config['model'], device)
+    neural_net, content_feature_maps_index_name, style_feature_maps_indices_names = utils.prepare_model(config, device)
     print(f'Using {config["model"]} in the optimization procedure.')
 
     content_img_set_of_feature_maps = neural_net(content_img)
@@ -149,9 +149,12 @@ if __name__ == "__main__":
     parser.add_argument("--tv_weight", type=float, help="weight factor for total variation loss", default=1e0)
 
     parser.add_argument("--optimizer", type=str, choices=['lbfgs', 'adam'], default='lbfgs')
-    parser.add_argument("--model", type=str, choices=['vgg16', 'vgg19'], default='vgg19')
+    parser.add_argument("--model", type=str, choices=['vgg16', 'vgg19', 'vgg16exp'], default='vgg19')
     parser.add_argument("--init_method", type=str, choices=['random', 'content', 'style'], default='content')
     parser.add_argument("--saving_freq", type=int, help="saving frequency for intermediate images (-1 means only final)", default=-1)
+
+    parser.add_argument("--content_layer", type=str, help="content layer name", default='conv4_2')
+    parser.add_argument("--style_layers", type=str, nargs='+', help="style layer names", default=['conv1_1', 'conv2_1', 'conv3_1', 'conv4_1', 'conv5_1'])
     args = parser.parse_args()
 
     # some values of weights that worked for figures.jpg, vg_starry_night.jpg (starting point for finding good images)

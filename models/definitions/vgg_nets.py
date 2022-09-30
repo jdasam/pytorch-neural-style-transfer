@@ -50,12 +50,16 @@ class Vgg16(torch.nn.Module):
 
 class Vgg16Experimental(torch.nn.Module):
     """Everything exposed so you can play with different combinations for style and content representation"""
-    def __init__(self, requires_grad=False, show_progress=False):
+    def __init__(self, content_layer, style_layers, requires_grad=False, show_progress=False):
         super().__init__()
         vgg_pretrained_features = models.vgg16(pretrained=True, progress=show_progress).features
-        self.layer_names = ['relu1_1', 'relu2_1', 'relu2_2', 'relu3_1', 'relu3_2', 'relu4_1', 'relu4_3', 'relu5_1']
-        self.content_feature_maps_index = 4
-        self.style_feature_maps_indices = list(range(len(self.layer_names)))  # all layers used for style representation
+        print(content_layer, style_layers)
+        self.layer_names = [content_layer] + style_layers
+        self.content_feature_maps_index = 0
+
+        print(self.layer_names)
+        # self.layer_names = ['relu1_1', 'relu2_1', 'relu2_2', 'relu3_1', 'relu3_2', 'relu4_1', 'relu4_3', 'relu5_1']
+        self.style_feature_maps_indices = list(range(1, len(self.layer_names)))  # all layers used for style representation
 
         self.conv1_1 = vgg_pretrained_features[0]
         self.relu1_1 = vgg_pretrained_features[1]
@@ -152,7 +156,12 @@ class Vgg16Experimental(torch.nn.Module):
         x = self.max_pooling5(x)
         # expose only the layers that you want to experiment with here
         vgg_outputs = namedtuple("VggOutputs", self.layer_names)
-        out = vgg_outputs(relu1_1, relu2_1, relu2_2, relu3_1, relu3_2, relu4_1, relu4_3, relu5_1)
+
+        selected_layers = []
+        for layer_name in self.layer_names:
+          selected_layers.append(locals()[layer_name])
+        out = vgg_outputs(*selected_layers)
+
 
         return out
 
@@ -194,7 +203,7 @@ class Vgg19(torch.nn.Module):
             self.slice4.add_module(str(x), vgg_pretrained_features[x])
         for x in range(20+self.offset, 22):
             self.slice5.add_module(str(x), vgg_pretrained_features[x])
-        for x in range(22, 29++self.offset):
+        for x in range(22, 29+self.offset):
             self.slice6.add_module(str(x), vgg_pretrained_features[x])
         if not requires_grad:
             for param in self.parameters():
